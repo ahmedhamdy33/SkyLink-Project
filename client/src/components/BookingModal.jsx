@@ -1,9 +1,20 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { api } from '../api/client.js';
 import { useAuth } from '../context/AuthContext.jsx';
 import { usePreferences } from '../context/PreferencesContext.jsx';
 import { calculatePassengerSubtotal, getTripMultiplier } from '../utils/pricing.js';
 import { saveSeatSelectionDraft } from '../utils/seatSelectionDraft.js';
+
+const CLASS_ORDER = ['First', 'Business', 'Premium Economy', 'Economy'];
+const PASSPORT_PATTERN = /^[A-Z0-9]{9}$/;
+
+function normalizePassport(value) {
+  return String(value || '')
+    .toUpperCase()
+    .replace(/[^A-Z0-9]/g, '')
+    .slice(0, 9);
+}
 
 export default function BookingModal({ flight, booking = null, onClose, initialPassengers = 1, initialClassType = 'Economy', initialTripType = 'oneWay' }) {
   const { user } = useAuth();
@@ -24,10 +35,57 @@ export default function BookingModal({ flight, booking = null, onClose, initialP
           seatNumber: ''
         }))
   );
+  const [availability, setAvailability] = useState(null);
   const [error, setError] = useState('');
 
   const tripType = booking?.trip_type || booking?.tripType || initialTripType || 'oneWay';
+  const bookingClassCounts = useMemo(
+    () =>
+      (booking?.passengers || []).reduce((counts, passenger) => {
+        const classType = passenger.class_type || passenger.classType || 'Economy';
+        counts[classType] = (counts[classType] || 0) + 1;
+        return counts;
+      }, {}),
+    [booking]
+  );
+  const classes = useMemo(() => {
+    const rawClasses =
+      availability?.classes ||
+      CLASS_ORDER.map((classType) => ({
+        class_type: classType,
+        total_seats: classType === 'Economy' ? Number(flight.available_seats || flight.total_seats || 0) : 0,
+        available_seats: classType === 'Economy' ? Number(flight.available_seats || flight.total_seats || 0) : 0,
+        is_available: classType === 'Economy'
+      }));
+
+    return rawClasses.map((item) => {
+      const heldSeats = bookingClassCounts[item.class_type] || 0;
+      return heldSeats
+        ? {
+            ...item,
+            available_seats: Number(item.available_seats || 0) + heldSeats,
+            is_available: Number(item.total_seats || 0) > 0
+          }
+        : item;
+    });
+  }, [availability, bookingClassCounts, flight.available_seats, flight.total_seats]);
+  const firstAvailableClass = classes.find((item) => item.is_available)?.class_type || 'Economy';
   const subtotal = useMemo(() => calculatePassengerSubtotal(passengers, flight.price, tripType), [flight.price, passengers, tripType]);
+
+  useEffect(() => {
+    if (!flight?.flight_id) return;
+    api.getFlightAvailability(flight.flight_id).then(setAvailability).catch(() => setAvailability(null));
+  }, [flight?.flight_id]);
+
+  useEffect(() => {
+    if (!availability) return;
+    setPassengers((current) =>
+      current.map((passenger) => {
+        const classInfo = classes.find((item) => item.class_type === passenger.classType);
+        return classInfo?.is_available ? passenger : { ...passenger, classType: firstAvailableClass };
+      })
+    );
+  }, [availability, classes, firstAvailableClass]);
 
   function setPassenger(index, key, value) {
     setPassengers((current) => current.map((item, itemIndex) => (itemIndex === index ? { ...item, [key]: value } : item)));
@@ -38,7 +96,17 @@ export default function BookingModal({ flight, booking = null, onClose, initialP
     setError('');
 
     if (!passengers.every((passenger) => passenger.fullName.trim() && passenger.passportNumber.trim())) {
-      setError('Please complete all passenger details before continuing.');
+      setError(t.passengerDetailsError);
+      return;
+    }
+
+    if (!passengers.every((passenger) => PASSPORT_PATTERN.test(passenger.passportNumber))) {
+      setError(t.passportLengthError || 'Passport number must be exactly 9 letters or numbers.');
+      return;
+    }
+
+    if (!passengers.every((passenger) => classes.find((item) => item.class_type === passenger.classType)?.is_available)) {
+      setError('Choose an available cabin class for every passenger.');
       return;
     }
 
@@ -63,11 +131,11 @@ export default function BookingModal({ flight, booking = null, onClose, initialP
             <p className="eyebrow">SkyLink</p>
             <h2>{booking ? t.edit : flight.flight_code}</h2>
             <p>
-              {flight.departure_code} to {flight.arrival_code}
+              {flight.departure_code} {t.routeTo} {flight.arrival_code}
             </p>
           </div>
           <button type="button" className="ghost" onClick={onClose}>
-            Close
+            {t.close}
           </button>
         </div>
 
@@ -86,18 +154,30 @@ export default function BookingModal({ flight, booking = null, onClose, initialP
                 setPassengers((current) =>
                   Array.from(
                     { length: count },
-                    (_, index) => current[index] || { fullName: '', passportNumber: '', classType: initialClassType || 'Economy', seatNumber: '' }
+                    (_, index) => current[index] || { fullName: '', passportNumber: '', classType: firstAvailableClass, seatNumber: '' }
                   )
                 );
               }}
             />
           </label>
           <div className="mini-summary-card">
-            <span>Estimated total</span>
+            <span>{t.estimatedTotal}</span>
             <strong>{formatMoney(subtotal)}</strong>
             <p>
-              {flight.flight_code} | {flight.departure_code} to {flight.arrival_code} | {tripType === 'roundTrip' ? 'Round trip' : 'One way'}
+              {flight.flight_code} | {flight.departure_code} {t.routeTo} {flight.arrival_code} | {tripType === 'roundTrip' ? t.roundTrip : t.oneWay}
             </p>
+          </div>
+        </div>
+
+        <div className="class-availability-strip">
+          <strong>Aircraft: {availability?.aircraft?.model || flight.aircraft_model || flight.model}</strong>
+          <span>Type: {availability?.aircraft?.aircraft_type || flight.aircraft_type || 'Aircraft'}</span>
+          <div>
+            {classes.map((item) => (
+              <span className={item.is_available ? 'class-pill available' : 'class-pill disabled'} key={item.class_type}>
+                {t.classTypes[item.class_type] || item.class_type}: {item.total_seats <= 0 ? 'Not available on this aircraft' : item.available_seats > 0 ? `${item.available_seats} available` : 'Fully booked'}
+              </span>
+            ))}
           </div>
         </div>
 
@@ -105,19 +185,30 @@ export default function BookingModal({ flight, booking = null, onClose, initialP
           {passengers.map((passenger, index) => (
             <div className="passenger-row" key={index}>
               <label>
-                Full name
+                {t.fullName}
                 <input required value={passenger.fullName} onChange={(event) => setPassenger(index, 'fullName', event.target.value)} />
               </label>
               <label>
-                Passport
-                <input required value={passenger.passportNumber} onChange={(event) => setPassenger(index, 'passportNumber', event.target.value)} />
+                {t.passport}
+                <input
+                  required
+                  minLength="9"
+                  maxLength="9"
+                  pattern="[A-Za-z0-9]{9}"
+                  title={t.passportLengthError || 'Passport number must be exactly 9 letters or numbers.'}
+                  value={passenger.passportNumber}
+                  onChange={(event) => setPassenger(index, 'passportNumber', normalizePassport(event.target.value))}
+                />
               </label>
               <label>
                 {t.class}
                 <select value={passenger.classType} onChange={(event) => setPassenger(index, 'classType', event.target.value)}>
-                  <option>Economy</option>
-                  <option>Business</option>
-                  <option>First</option>
+                  {classes.map((item) => (
+                    <option disabled={!item.is_available} key={item.class_type} value={item.class_type}>
+                      {t.classTypes[item.class_type] || item.class_type}
+                      {!item.is_available ? ` - ${item.total_seats <= 0 ? 'Not available' : 'Fully booked'}` : ''}
+                    </option>
+                  ))}
                 </select>
               </label>
             </div>
@@ -125,13 +216,13 @@ export default function BookingModal({ flight, booking = null, onClose, initialP
         </div>
 
         <div className="price-strip">
-          <span>Passengers: {passengers.length}</span>
-          <span>Base fare: {formatMoney(flight.price)}</span>
-          <span>Trip: x{getTripMultiplier(tripType)}</span>
-          <strong>Estimated subtotal: {formatMoney(subtotal)}</strong>
+          <span>{t.passengers}: {passengers.length}</span>
+          <span>{t.baseFare}: {formatMoney(flight.price)}</span>
+          <span>{t.trip}: x{getTripMultiplier(tripType)}</span>
+          <strong>{t.estimatedSubtotal}: {formatMoney(subtotal)}</strong>
         </div>
 
-        <button>{booking ? 'Continue to seats' : 'Choose seats'}</button>
+        <button>{booking ? t.continueToSeats : t.chooseSeats}</button>
       </form>
     </div>
   );

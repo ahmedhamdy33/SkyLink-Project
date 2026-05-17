@@ -3,6 +3,9 @@ import dotenv from 'dotenv';
 import express from 'express';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import aiRoutes from './routes/aiRoutes.js';
+import adminFlightRoutes from './routes/adminFlightRoutes.js';
+import aircraftRoutes from './routes/aircraftRoutes.js';
 import authRoutes from './routes/authRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
 import discountRoutes from './routes/discountRoutes.js';
@@ -39,6 +42,9 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/admin/flights', adminFlightRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/aircraft', aircraftRoutes);
 app.use('/api/flights', flightRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/discounts', discountRoutes);

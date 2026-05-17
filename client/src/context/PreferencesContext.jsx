@@ -53,7 +53,7 @@ export function PreferencesProvider({ children }) {
       language,
       currency,
       currencies,
-      t: translations[language],
+      t: translations[language] || translations.en,
       formatMoney,
       toggleTheme: () => setTheme((current) => (current === 'light' ? 'dark' : 'light')),
       toggleLanguage: () => setLanguage((current) => (current === 'en' ? 'ar' : 'en')),

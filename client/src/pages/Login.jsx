@@ -25,13 +25,13 @@ export default function Login() {
     <section className="auth-page">
       <div className="auth-shell">
         <div className="auth-visual">
-          <p className="eyebrow">SkyLink lounge access</p>
-          <h1>Step back into your premium booking experience.</h1>
-          <p>Review upcoming flights, manage bookings, and continue every trip from a secure passenger workspace.</p>
+          <p className="eyebrow">{t.authLoginEyebrow}</p>
+          <h1>{t.authLoginTitle}</h1>
+          <p>{t.authLoginCopy}</p>
           <div className="auth-highlights">
-            <span>Live itinerary updates</span>
-            <span>Fast checkout routing</span>
-            <span>Smart flight recommendations</span>
+            <span>{t.authLoginHighlight1}</span>
+            <span>{t.authLoginHighlight2}</span>
+            <span>{t.authLoginHighlight3}</span>
           </div>
         </div>
         <form className="auth-panel" onSubmit={submit}>
@@ -46,6 +46,9 @@ export default function Login() {
             {t.password}
             <input type="password" required value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} />
           </label>
+          <Link className="form-helper-link" to="/forgot-password">
+            Forgot password?
+          </Link>
           <button>{t.login}</button>
           <Link to="/register">{t.createAccount}</Link>
         </form>

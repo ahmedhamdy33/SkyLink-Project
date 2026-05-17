@@ -36,7 +36,7 @@ export default function AdminDiscounts() {
         flightId: discountForm.scope === 'flight' ? Number(discountForm.flightId) : null
       });
       setDiscountForm(blankDiscount);
-      setSuccess('Discount code saved successfully.');
+      setSuccess(t.discountSaved);
       setFlights(await api.getFlights());
     } catch (err) {
       setError(err.message);
@@ -47,14 +47,14 @@ export default function AdminDiscounts() {
     <section className="content-section page-top admin-page">
       <div className="page-banner">
         <div>
-          <p className="eyebrow">Discount studio</p>
-          <h1>Add Discount</h1>
-          <p className="section-copy">Create global discount codes or attach a code to one specific flight.</p>
+          <p className="eyebrow">{t.discountStudio}</p>
+          <h1>{t.discount}</h1>
+          <p className="section-copy">{t.discountCopy}</p>
         </div>
         <div className="page-banner-card">
-          <span>Discount scope</span>
-          <strong>{discountForm.scope === 'flight' ? 'Flight' : 'All'}</strong>
-          <p>{discountForm.scope === 'flight' ? 'Specific flight only' : 'All flights'}</p>
+          <span>{t.discountScope}</span>
+          <strong>{discountForm.scope === 'flight' ? t.flightSingular : t.all}</strong>
+          <p>{discountForm.scope === 'flight' ? t.specificFlightOnly : t.allFlights}</p>
         </div>
       </div>
 
@@ -74,27 +74,27 @@ export default function AdminDiscounts() {
             <input required min="1" type="number" value={discountForm.value} onChange={(event) => setDiscountForm({ ...discountForm, value: event.target.value })} />
           </label>
           <label>
-            Type
+            {t.type}
             <select value={discountForm.type} onChange={(event) => setDiscountForm({ ...discountForm, type: event.target.value })}>
-              <option value="percentage">percentage</option>
-              <option value="fixed">fixed</option>
+              <option value="percentage">{t.percentage}</option>
+              <option value="fixed">{t.fixed}</option>
             </select>
           </label>
           <label>
-            Applies to
+            {t.appliesTo}
             <select value={discountForm.scope} onChange={(event) => setDiscountForm({ ...discountForm, scope: event.target.value, flightId: '' })}>
-              <option value="all">All flights</option>
-              <option value="flight">Specific flight</option>
+              <option value="all">{t.allFlights}</option>
+              <option value="flight">{t.specificFlight}</option>
             </select>
           </label>
           {discountForm.scope === 'flight' && (
             <label>
               {t.flights}
               <select required value={discountForm.flightId} onChange={(event) => setDiscountForm({ ...discountForm, flightId: event.target.value })}>
-                <option value="">Choose flight</option>
+                <option value="">{t.chooseFlight}</option>
                 {flights.map((flight) => (
                   <option key={flight.flight_id} value={flight.flight_id}>
-                    {flight.flight_code} - {flight.departure_code} to {flight.arrival_code}
+                    {flight.flight_code} - {flight.departure_code} {t.routeTo} {flight.arrival_code}
                   </option>
                 ))}
               </select>

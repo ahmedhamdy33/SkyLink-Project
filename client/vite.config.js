@@ -7,7 +7,7 @@ export default defineConfig({
     port: 5173,
     allowedHosts: ['.ngrok-free.app', '.ngrok-free.dev', 'freight-secrecy-smother.ngrok-free.dev'],
     proxy: {
-      '/api': 'http://localhost:5000'
+      '/api': 'http://localhost:5001'
     }
   }
 });

@@ -225,14 +225,40 @@ export const airports = [
 export const airlines = [
   { airline_id: 1, airline_name: 'SkyLink Air', country: 'Egypt' },
   { airline_id: 2, airline_name: 'Nile Wings', country: 'Egypt' },
-  { airline_id: 3, airline_name: 'Global Jet', country: 'United States' }
+  { airline_id: 3, airline_name: 'Global Jet', country: 'United States' },
+  { airline_id: 4, airline_name: 'EgyptAir', country: 'Egypt' },
+  { airline_id: 5, airline_name: 'Emirates', country: 'United Arab Emirates' },
+  { airline_id: 6, airline_name: 'Qatar Airways', country: 'Qatar' },
+  { airline_id: 7, airline_name: 'Etihad Airways', country: 'United Arab Emirates' },
+  { airline_id: 8, airline_name: 'Saudia', country: 'Saudi Arabia' },
+  { airline_id: 9, airline_name: 'Flynas', country: 'Saudi Arabia' },
+  { airline_id: 10, airline_name: 'Gulf Air', country: 'Bahrain' },
+  { airline_id: 11, airline_name: 'Oman Air', country: 'Oman' },
+  { airline_id: 12, airline_name: 'Royal Jordanian', country: 'Jordan' },
+  { airline_id: 13, airline_name: 'Ethiopian Airlines', country: 'Ethiopia' },
+  { airline_id: 14, airline_name: 'Aegean Airlines', country: 'Greece' },
+  { airline_id: 15, airline_name: 'Turkish Airlines', country: 'Turkey' },
+  { airline_id: 16, airline_name: 'British Airways', country: 'United Kingdom' }
 ];
 
 export const aircraft = [
-  { aircraft_id: 1, airline_id: 1, model: 'Airbus A320', total_seats: 24 },
-  { aircraft_id: 2, airline_id: 1, model: 'Boeing 787', total_seats: 30 },
-  { aircraft_id: 3, airline_id: 2, model: 'Airbus A321neo', total_seats: 28 },
-  { aircraft_id: 4, airline_id: 3, model: 'Boeing 777', total_seats: 36 }
+  { aircraft_id: 1, airline_id: 1, model: 'Airbus A320', aircraft_type: 'Narrow-Body', total_seats: 162, first_seats: 0, business_seats: 12, premium_economy_seats: 0, economy_seats: 150 },
+  { aircraft_id: 2, airline_id: 1, model: 'Boeing 787-9 Dreamliner', aircraft_type: 'Wide-Body', total_seats: 278, first_seats: 0, business_seats: 30, premium_economy_seats: 28, economy_seats: 220 },
+  { aircraft_id: 3, airline_id: 2, model: 'Airbus A321neo', aircraft_type: 'Narrow-Body', total_seats: 206, first_seats: 0, business_seats: 20, premium_economy_seats: 0, economy_seats: 186 },
+  { aircraft_id: 4, airline_id: 3, model: 'Boeing 777', aircraft_type: 'Wide-Body', total_seats: 334, first_seats: 8, business_seats: 42, premium_economy_seats: 24, economy_seats: 260 },
+  { aircraft_id: 5, airline_id: 4, model: 'Airbus A330', aircraft_type: 'Wide-Body', total_seats: 300, first_seats: 0, business_seats: 36, premium_economy_seats: 24, economy_seats: 240 },
+  { aircraft_id: 6, airline_id: 5, model: 'Boeing 737 MAX', aircraft_type: 'Narrow-Body', total_seats: 178, first_seats: 0, business_seats: 16, premium_economy_seats: 0, economy_seats: 162 },
+  { aircraft_id: 7, airline_id: 1, model: 'Airbus A350-900', aircraft_type: 'Wide-Body', total_seats: 320, first_seats: 0, business_seats: 48, premium_economy_seats: 32, economy_seats: 240 },
+  { aircraft_id: 8, airline_id: 2, model: 'Embraer E190', aircraft_type: 'Regional', total_seats: 96, first_seats: 0, business_seats: 8, premium_economy_seats: 0, economy_seats: 88 },
+  { aircraft_id: 9, airline_id: 8, model: 'Airbus A330neo', aircraft_type: 'Wide-Body', total_seats: 316, first_seats: 0, business_seats: 40, premium_economy_seats: 28, economy_seats: 248 },
+  { aircraft_id: 10, airline_id: 9, model: 'Airbus A320neo', aircraft_type: 'Narrow-Body', total_seats: 174, first_seats: 0, business_seats: 12, premium_economy_seats: 0, economy_seats: 162 },
+  { aircraft_id: 11, airline_id: 10, model: 'Airbus A321', aircraft_type: 'Narrow-Body', total_seats: 200, first_seats: 0, business_seats: 20, premium_economy_seats: 0, economy_seats: 180 },
+  { aircraft_id: 12, airline_id: 11, model: 'Boeing 737-800', aircraft_type: 'Narrow-Body', total_seats: 160, first_seats: 0, business_seats: 16, premium_economy_seats: 0, economy_seats: 144 },
+  { aircraft_id: 13, airline_id: 12, model: 'Embraer E195', aircraft_type: 'Regional', total_seats: 120, first_seats: 0, business_seats: 10, premium_economy_seats: 0, economy_seats: 110 },
+  { aircraft_id: 14, airline_id: 13, model: 'Boeing 787-8 Dreamliner', aircraft_type: 'Wide-Body', total_seats: 268, first_seats: 0, business_seats: 28, premium_economy_seats: 20, economy_seats: 220 },
+  { aircraft_id: 15, airline_id: 14, model: 'ATR 72', aircraft_type: 'Regional', total_seats: 70, first_seats: 0, business_seats: 0, premium_economy_seats: 0, economy_seats: 70 },
+  { aircraft_id: 16, airline_id: 15, model: 'Airbus A220', aircraft_type: 'Narrow-Body', total_seats: 130, first_seats: 0, business_seats: 10, premium_economy_seats: 0, economy_seats: 120 },
+  { aircraft_id: 17, airline_id: 16, model: 'Bombardier CRJ Series', aircraft_type: 'Regional', total_seats: 76, first_seats: 0, business_seats: 6, premium_economy_seats: 0, economy_seats: 70 }
 ];
 
 export const users = [
@@ -342,7 +368,19 @@ export let flights = [
   { flight_id: 21, flight_code: 'SL1929', airline_id: 1, aircraft_id: 1, departure_airport_id: 8, arrival_airport_id: 11, departure_time: '2026-05-18T09:00:00.000Z', arrival_time: '2026-05-18T10:05:00.000Z', price: 135, available_seats: 24, status: 'active', discount_value: 0, discount_type: null, discount_code: null },
   { flight_id: 22, flight_code: 'NW2030', airline_id: 2, aircraft_id: 3, departure_airport_id: 9, arrival_airport_id: 18, departure_time: '2026-05-19T17:25:00.000Z', arrival_time: '2026-05-19T19:35:00.000Z', price: 205, available_seats: 28, status: 'active', discount_value: 0, discount_type: null, discount_code: null },
   { flight_id: 23, flight_code: 'GJ2131', airline_id: 3, aircraft_id: 4, departure_airport_id: 12, arrival_airport_id: 13, departure_time: '2026-05-20T07:10:00.000Z', arrival_time: '2026-05-20T08:20:00.000Z', price: 120, available_seats: 36, status: 'active', discount_value: 0, discount_type: null, discount_code: null },
-  { flight_id: 24, flight_code: 'SL2232', airline_id: 1, aircraft_id: 2, departure_airport_id: 14, arrival_airport_id: 3, departure_time: '2026-05-21T19:50:00.000Z', arrival_time: '2026-05-21T22:15:00.000Z', price: 260, available_seats: 30, status: 'active', discount_value: 25, discount_type: 'fixed', discount_code: 'MAD25' }
+  { flight_id: 24, flight_code: 'SL2232', airline_id: 1, aircraft_id: 2, departure_airport_id: 14, arrival_airport_id: 3, departure_time: '2026-05-21T19:50:00.000Z', arrival_time: '2026-05-21T22:15:00.000Z', price: 260, available_seats: 30, status: 'active', discount_value: 25, discount_type: 'fixed', discount_code: 'MAD25' },
+  { flight_id: 25, flight_code: 'MS401', airline_id: 4, aircraft_id: 5, departure_airport_id: 1, arrival_airport_id: 2, departure_time: '2026-05-22T06:15:00.000Z', arrival_time: '2026-05-22T09:25:00.000Z', price: 255, available_seats: 180, status: 'active', discount_value: 0, discount_type: null, discount_code: null },
+  { flight_id: 26, flight_code: 'EK512', airline_id: 5, aircraft_id: 6, departure_airport_id: 1, arrival_airport_id: 2, departure_time: '2026-05-22T14:10:00.000Z', arrival_time: '2026-05-22T17:15:00.000Z', price: 295, available_seats: 320, status: 'active', discount_value: 30, discount_type: 'fixed', discount_code: 'EMIRATES30' },
+  { flight_id: 27, flight_code: 'BA155', airline_id: 16, aircraft_id: 17, departure_airport_id: 1, arrival_airport_id: 3, departure_time: '2026-05-23T08:00:00.000Z', arrival_time: '2026-05-23T13:20:00.000Z', price: 545, available_seats: 180, status: 'active', discount_value: 0, discount_type: null, discount_code: null },
+  { flight_id: 28, flight_code: 'MS777', airline_id: 4, aircraft_id: 5, departure_airport_id: 1, arrival_airport_id: 3, departure_time: '2026-05-23T16:45:00.000Z', arrival_time: '2026-05-23T22:05:00.000Z', price: 505, available_seats: 180, status: 'active', discount_value: 8, discount_type: 'percentage', discount_code: 'LHR8' },
+  { flight_id: 29, flight_code: 'QR221', airline_id: 6, aircraft_id: 7, departure_airport_id: 1, arrival_airport_id: 8, departure_time: '2026-05-24T10:20:00.000Z', arrival_time: '2026-05-24T13:05:00.000Z', price: 250, available_seats: 310, status: 'active', discount_value: 0, discount_type: null, discount_code: null },
+  { flight_id: 30, flight_code: 'EY310', airline_id: 7, aircraft_id: 8, departure_airport_id: 1, arrival_airport_id: 11, departure_time: '2026-05-24T18:30:00.000Z', arrival_time: '2026-05-24T21:35:00.000Z', price: 245, available_seats: 290, status: 'active', discount_value: 0, discount_type: null, discount_code: null },
+  { flight_id: 31, flight_code: 'SV611', airline_id: 8, aircraft_id: 9, departure_airport_id: 1, arrival_airport_id: 9, departure_time: '2026-05-25T04:55:00.000Z', arrival_time: '2026-05-25T07:05:00.000Z', price: 205, available_seats: 300, status: 'active', discount_value: 10, discount_type: 'percentage', discount_code: 'SAUDIA10' },
+  { flight_id: 32, flight_code: 'XY480', airline_id: 9, aircraft_id: 10, departure_airport_id: 1, arrival_airport_id: 9, departure_time: '2026-05-25T12:40:00.000Z', arrival_time: '2026-05-25T14:45:00.000Z', price: 185, available_seats: 174, status: 'active', discount_value: 0, discount_type: null, discount_code: null },
+  { flight_id: 33, flight_code: 'GF090', airline_id: 10, aircraft_id: 11, departure_airport_id: 1, arrival_airport_id: 20, departure_time: '2026-05-26T09:15:00.000Z', arrival_time: '2026-05-26T12:00:00.000Z', price: 215, available_seats: 166, status: 'active', discount_value: 0, discount_type: null, discount_code: null },
+  { flight_id: 34, flight_code: 'WY801', airline_id: 11, aircraft_id: 12, departure_airport_id: 1, arrival_airport_id: 21, departure_time: '2026-05-26T19:35:00.000Z', arrival_time: '2026-05-26T22:20:00.000Z', price: 225, available_seats: 162, status: 'active', discount_value: 12, discount_type: 'fixed', discount_code: 'OMAN12' },
+  { flight_id: 35, flight_code: 'RJ504', airline_id: 12, aircraft_id: 13, departure_airport_id: 1, arrival_airport_id: 18, departure_time: '2026-05-27T07:25:00.000Z', arrival_time: '2026-05-27T09:00:00.000Z', price: 175, available_seats: 120, status: 'active', discount_value: 0, discount_type: null, discount_code: null },
+  { flight_id: 36, flight_code: 'A3896', airline_id: 14, aircraft_id: 15, departure_airport_id: 1, arrival_airport_id: 16, departure_time: '2026-05-27T15:10:00.000Z', arrival_time: '2026-05-27T17:30:00.000Z', price: 190, available_seats: 180, status: 'active', discount_value: 0, discount_type: null, discount_code: null }
 ];
 
 export let discounts = [
@@ -365,11 +403,27 @@ export let bookings = [
 ];
 
 export let bookingPassengers = [
-  { passenger_id: 1, booking_id: 1, full_name: 'Maya Hassan', passport_number: 'A1234567', class_type: 'Economy', seat_number: '1A' }
+  { passenger_id: 1, booking_id: 1, full_name: 'Maya Hassan', passport_number: 'A12345678', class_type: 'Economy', seat_number: '1A' }
 ];
 
 export const notifications = [
-  { id: 1, title: 'Welcome to SkyLink', body: 'Check your flight status before travelling.' }
+  { id: 1, title: 'Welcome to SkyLink', body: 'Check your flight status before travelling.', created_at: new Date().toISOString() },
+  { id: 2, title: 'AI recommendations are live', body: 'Search and booking activity now improves your suggested flights.', created_at: new Date().toISOString() }
+];
+
+export let searchHistory = [];
+
+export let flightTransitStops = [
+  {
+    transit_id: 1,
+    flight_id: 2,
+    airport_code: 'DXB',
+    airport_name: 'Dubai International Airport',
+    arrival_time: '2026-05-02T05:05:00.000Z',
+    departure_time: '2026-05-02T06:25:00.000Z',
+    layover_minutes: 80,
+    stop_order: 1
+  }
 ];
 
 export function setFlights(nextFlights) {
@@ -388,6 +442,14 @@ export function setBookingPassengers(nextPassengers) {
   bookingPassengers = nextPassengers;
 }
 
+export function setSearchHistory(nextSearchHistory) {
+  searchHistory = nextSearchHistory;
+}
+
+export function setFlightTransitStops(nextTransitStops) {
+  flightTransitStops = nextTransitStops;
+}
+
 export function enrichFlight(flight) {
   const departure = airports.find((item) => item.airport_id === Number(flight.departure_airport_id));
   const arrival = airports.find((item) => item.airport_id === Number(flight.arrival_airport_id));
@@ -401,6 +463,14 @@ export function enrichFlight(flight) {
     arrival_city: arrival?.city,
     airline_name: airline?.airline_name,
     aircraft_model: plane?.model,
-    total_seats: plane?.total_seats
+    aircraft_type: plane?.aircraft_type,
+    total_seats: plane?.total_seats,
+    aircraft_first_seats: plane?.first_seats,
+    aircraft_business_seats: plane?.business_seats,
+    aircraft_premium_economy_seats: plane?.premium_economy_seats,
+    aircraft_economy_seats: plane?.economy_seats,
+    is_direct: flight.is_direct ?? true,
+    transit_count: Number(flight.transit_count || 0),
+    total_duration: Number(flight.total_duration || 0)
   };
 }

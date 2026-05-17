@@ -22,7 +22,7 @@ export default function AdminFlights() {
   }, []);
 
   async function deleteFlight(id) {
-    if (!window.confirm('Delete this flight? Booked flights must be cancelled instead.')) return;
+    if (!window.confirm(t.deleteFlightConfirm)) return;
     try {
       await api.deleteFlight(id);
       load();
@@ -44,14 +44,14 @@ export default function AdminFlights() {
     <section className="content-section page-top admin-page">
       <div className="page-banner">
         <div>
-          <p className="eyebrow">Flight inventory</p>
+          <p className="eyebrow">{t.flightInventory}</p>
           <h1>{t.flights}</h1>
-          <p className="section-copy">Review, edit, cancel, or delete flight records from a dedicated management page.</p>
+          <p className="section-copy">{t.adminFlightsCopy}</p>
         </div>
         <div className="page-banner-card">
-          <span>Total flights</span>
+          <span>{t.totalFlights}</span>
           <strong>{flights.length}</strong>
-          <p>Routes in inventory</p>
+          <p>{t.routesInventory}</p>
         </div>
       </div>
 
@@ -62,7 +62,7 @@ export default function AdminFlights() {
       <section className="admin-table">
         <div className="section-head">
           <div>
-            <p className="eyebrow">Manage schedule</p>
+            <p className="eyebrow">{t.manageSchedule}</p>
             <h2>{t.flights}</h2>
           </div>
           <Link className="button" to="/admin/add-flight">
@@ -72,9 +72,9 @@ export default function AdminFlights() {
         {flights.map((flight) => (
           <article className="table-row" key={flight.flight_id}>
             <strong>{flight.flight_code}</strong>
-            <span>{flight.departure_code} to {flight.arrival_code}</span>
+            <span>{flight.departure_code} {t.routeTo} {flight.arrival_code}</span>
             <span>{formatMoney(flight.price)}</span>
-            <span className={`status ${flight.status}`}>{flight.status}</span>
+            <span className={`status ${flight.status}`}>{t.statusLabels[flight.status] || flight.status}</span>
             <div className="row-actions">
               <Link className="button" to={`/admin/flights/${flight.flight_id}/edit`}>
                 {t.edit}
@@ -88,7 +88,7 @@ export default function AdminFlights() {
             </div>
           </article>
         ))}
-        {!flights.length && <p className="empty">No flights found.</p>}
+        {!flights.length && <p className="empty">{t.noFlightsFound}</p>}
       </section>
     </section>
   );

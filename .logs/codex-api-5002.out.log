@@ -1,0 +1,6 @@
+
+> @skylink/server@1.0.0 start
+> node src/server.js
+
+SkyLink API listening on port 5002
+Connected to SQL Server

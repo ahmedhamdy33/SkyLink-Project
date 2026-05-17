@@ -9,6 +9,7 @@ export function generateSeatMap(totalSeats = 24, bookedSeats = []) {
         seats.push({
           seat_id: seats.length + 1,
           seat_number: seatNumber,
+          class_type: 'Economy',
           status: bookedSeats.includes(seatNumber) ? 'booked' : 'available'
         });
       }

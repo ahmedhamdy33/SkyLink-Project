@@ -16,14 +16,17 @@ export function AuthProvider({ children }) {
   }
 
   async function register(payload) {
-    const nextAuth = await api.register(payload);
-    localStorage.setItem('skylink_auth', JSON.stringify(nextAuth));
-    setAuth(nextAuth);
+    return api.register(payload);
   }
 
   function logout() {
     localStorage.removeItem('skylink_auth');
     setAuth(null);
+  }
+
+  function updateAuth(nextAuth) {
+    localStorage.setItem('skylink_auth', JSON.stringify(nextAuth));
+    setAuth(nextAuth);
   }
 
   const value = useMemo(
@@ -33,6 +36,7 @@ export function AuthProvider({ children }) {
       isAdmin: auth?.user?.role === 'admin',
       login,
       register,
+      updateAuth,
       logout
     }),
     [auth]

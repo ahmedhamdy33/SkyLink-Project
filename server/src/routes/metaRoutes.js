@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import { getReferenceData } from '../controllers/metaController.js';
+import { getNotifications, getReferenceData } from '../controllers/metaController.js';
 
 const router = Router();
 
 router.get('/reference-data', getReferenceData);
+router.get('/notifications', getNotifications);
 
 export default router;

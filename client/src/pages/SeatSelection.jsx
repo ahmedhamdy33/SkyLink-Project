@@ -8,15 +8,16 @@ import { clearSeatSelectionDraft, readSeatSelectionDraft } from '../utils/seatSe
 
 export default function SeatSelection() {
   const navigate = useNavigate();
-  const { formatMoney } = usePreferences();
+  const { formatMoney, t } = usePreferences();
   const [draft, setDraft] = useState(() => readSeatSelectionDraft());
   const [seats, setSeats] = useState([]);
+  const [availability, setAvailability] = useState(null);
   const [selectedSeats, setSelectedSeats] = useState(() => {
     const nextDraft = readSeatSelectionDraft();
-    return (nextDraft?.bookingPassengers || nextDraft?.passengers || [])
-      .map((passenger) => passenger.seat_number || passenger.seatNumber)
-      .filter(Boolean);
+    const draftPassengers = nextDraft?.bookingPassengers || nextDraft?.passengers || [];
+    return draftPassengers.map((passenger) => passenger.seat_number || passenger.seatNumber || '');
   });
+  const [activePassengerIndex, setActivePassengerIndex] = useState(0);
   const [discountCode, setDiscountCode] = useState('');
   const [discount, setDiscount] = useState(null);
   const [error, setError] = useState('');
@@ -24,7 +25,18 @@ export default function SeatSelection() {
 
   useEffect(() => {
     if (!draft?.flight?.flight_id) return;
-    api.getFlightSeats(draft.flight.flight_id).then(setSeats).catch(() => setSeats([]));
+    Promise.all([
+      api.getFlightSeatMap(draft.flight.flight_id).catch(() => api.getFlightSeats(draft.flight.flight_id)),
+      api.getFlightAvailability(draft.flight.flight_id).catch(() => null)
+    ])
+      .then(([seatMap, classAvailability]) => {
+        setSeats(seatMap || []);
+        setAvailability(classAvailability);
+      })
+      .catch(() => {
+        setSeats([]);
+        setAvailability(null);
+      });
   }, [draft]);
 
   const subtotal = useMemo(() => {
@@ -33,12 +45,44 @@ export default function SeatSelection() {
   }, [draft]);
 
   const total = Math.max(0, subtotal - Number(discount?.amount || 0));
+  const heldSeatNumbers = useMemo(
+    () =>
+      draft?.bookingId
+        ? (draft.passengers || [])
+            .map((passenger) => passenger.seat_number || passenger.seatNumber)
+            .filter(Boolean)
+        : [],
+    [draft]
+  );
+  const activeClass = draft?.passengers?.[activePassengerIndex]?.classType || 'Economy';
 
   function toggleSeat(number) {
     if (!draft) return;
-    setSelectedSeats((current) =>
-      current.includes(number) ? current.filter((seat) => seat !== number) : current.length < draft.passengers.length ? [...current, number] : current
-    );
+    const seat = seats.find((item) => item.seat_number === number);
+    const heldByThisBooking = heldSeatNumbers.includes(number);
+    if (!seat || ((seat.is_booked || seat.status === 'booked') && !heldByThisBooking)) return;
+    setError('');
+
+    const existingIndex = selectedSeats.indexOf(number);
+    if (existingIndex >= 0) {
+      setActivePassengerIndex(existingIndex);
+      setSelectedSeats((current) => current.map((seatNumber, index) => (index === existingIndex ? '' : seatNumber)));
+      return;
+    }
+
+    setSelectedSeats((current) => {
+      const nextPassenger = draft.passengers[activePassengerIndex];
+      if (nextPassenger?.classType && seat?.class_type && nextPassenger.classType !== seat.class_type) {
+        setError(`${nextPassenger.fullName} needs a ${t.classTypes[nextPassenger.classType] || nextPassenger.classType} seat.`);
+        return current;
+      }
+
+      const nextSeats = Array.from({ length: draft.passengers.length }, (_, index) => current[index] || '');
+      nextSeats[activePassengerIndex] = number;
+      const nextEmptyIndex = nextSeats.findIndex((seatNumber) => !seatNumber);
+      if (nextEmptyIndex >= 0) setActivePassengerIndex(nextEmptyIndex);
+      return nextSeats;
+    });
   }
 
   async function applyDiscount() {
@@ -52,7 +96,7 @@ export default function SeatSelection() {
         flightId: draft.flight.flight_id
       });
       setDiscount(applied);
-      setNotice(`Discount code ${applied.code} applied successfully.`);
+      setNotice(t.discountApplied.replace('{code}', applied.code));
     } catch (err) {
       setError(err.message);
     }
@@ -62,8 +106,14 @@ export default function SeatSelection() {
     if (!draft) return;
     setError('');
 
-    if (selectedSeats.length !== draft.passengers.length) {
-      setError('Please choose one seat for each passenger before confirming.');
+    if (selectedSeats.filter(Boolean).length !== draft.passengers.length) {
+      setError(t.seatSelectionError);
+      return;
+    }
+
+    const seatIds = selectedSeats.map((seatNumber) => seats.find((seat) => seat.seat_number === seatNumber)?.seat_id).filter(Boolean);
+    if (seatIds.length !== draft.passengers.length) {
+      setError(t.seatSelectionError);
       return;
     }
 
@@ -72,6 +122,7 @@ export default function SeatSelection() {
       userId: draft.userId,
       passengers: draft.passengers,
       seats: selectedSeats,
+      seatIds,
       discountCode: discount?.code || null,
       totalAmount: total,
       tripType: draft.tripType || 'oneWay'
@@ -84,7 +135,14 @@ export default function SeatSelection() {
 
       clearSeatSelectionDraft();
       setDraft(null);
-      navigate(draft.bookingId ? '/bookings' : `/payment/${savedBooking.booking_id}`);
+      navigate(draft.bookingId ? '/bookings' : `/payment/${savedBooking.booking_id}`, {
+        state: draft.bookingId
+          ? null
+          : {
+              celebrateBooking: true,
+              flightCode: draft.flight.flight_code
+            }
+      });
     } catch (err) {
       setError(err.message);
     }
@@ -95,13 +153,13 @@ export default function SeatSelection() {
       <section className="content-section page-top seat-selection-page">
         <div className="page-banner">
           <div>
-            <p className="eyebrow">Seat selection</p>
-            <h1>No booking draft found</h1>
-            <p className="section-copy">Start a booking first, fill in the passenger details, then SkyLink will bring you here to choose seats.</p>
+            <p className="eyebrow">{t.seatSelection}</p>
+            <h1>{t.noDraftTitle}</h1>
+            <p className="section-copy">{t.noDraftCopy}</p>
           </div>
         </div>
         <p className="empty">
-          Go back to the <Link to="/flights">Flights page</Link> and start a new booking.
+          <Link to="/flights">{t.backToFlightsDraft}</Link>
         </p>
       </section>
     );
@@ -111,75 +169,99 @@ export default function SeatSelection() {
     <section className="content-section page-top seat-selection-page">
       <div className="page-banner">
         <div>
-          <p className="eyebrow">Seat selection</p>
-          <h1>Choose seats for {draft.flight.flight_code}</h1>
+          <p className="eyebrow">{t.seatSelection}</p>
+          <h1>{t.chooseSeatsFor.replace('{flightCode}', draft.flight.flight_code)}</h1>
           <p className="section-copy">
-            {draft.flight.departure_code} to {draft.flight.arrival_code} | {draft.passengers.length} passenger{draft.passengers.length > 1 ? 's' : ''}
+            {draft.flight.departure_code} {t.routeTo} {draft.flight.arrival_code} | {draft.passengers.length} {t.passengersLabel}
             {' | '}
-            {draft.tripType === 'roundTrip' ? 'Round trip' : 'One way'}
+            {draft.tripType === 'roundTrip' ? t.roundTrip : t.oneWay}
+          </p>
+          <p className="section-copy">
+            Aircraft: {availability?.aircraft?.model || draft.flight.aircraft_model || draft.flight.model} | Type:{' '}
+            {availability?.aircraft?.aircraft_type || draft.flight.aircraft_type || 'Aircraft'}
           </p>
         </div>
         <div className="page-banner-card">
-          <span>Cabin summary</span>
+          <span>{t.cabinSummary}</span>
           <strong>{formatMoney(total)}</strong>
-          <p>{discount ? 'Discount applied' : 'Final total before payment'}</p>
+          <p>{discount ? t.discountAppliedShort : t.finalTotalBeforePayment}</p>
         </div>
       </div>
 
       {error && <p className="alert">{error}</p>}
       {notice && <p className="success">{notice}</p>}
 
+      <section className="seat-top-actions admin-form">
+        <div>
+          <p className="eyebrow">{t.discount}</p>
+          <h2>{t.bookNow}</h2>
+        </div>
+        <div className="apply-code-row">
+          <input placeholder={t.discountCode} value={discountCode} onChange={(event) => setDiscountCode(event.target.value)} />
+          <button type="button" className="secondary" onClick={applyDiscount}>
+            {t.apply}
+          </button>
+        </div>
+        <div className="price-strip">
+          <span>{t.subtotal}: {formatMoney(subtotal)}</span>
+          <span>{t.discount}: {formatMoney(discount?.amount || 0)}</span>
+          <strong>{t.total}: {formatMoney(total)}</strong>
+        </div>
+        <div className="row-actions">
+          <button type="button" onClick={confirmBooking}>
+            {draft.bookingId ? t.saveBooking : t.bookNow}
+          </button>
+          <button
+            type="button"
+            className="ghost"
+            onClick={() => {
+              navigate(-1);
+            }}
+          >
+            {t.back}
+          </button>
+        </div>
+      </section>
+
       <div className="seat-selection-layout">
         <div className="chart-panel">
-          <SeatMap seats={seats} selectedSeats={selectedSeats} onToggle={toggleSeat} />
+          {availability?.classes && (
+            <div className="class-availability-strip compact">
+              {availability.classes.map((item) => (
+                <span className={item.is_available ? 'class-pill available' : 'class-pill disabled'} key={item.class_type}>
+                  {t.classTypes[item.class_type] || item.class_type}: {item.total_seats <= 0 ? 'Not available' : item.available_seats > 0 ? `${item.available_seats} available` : 'Fully booked'}
+                </span>
+              ))}
+            </div>
+          )}
+          <SeatMap
+            seats={seats}
+            selectedSeats={selectedSeats}
+            heldSeatNumbers={heldSeatNumbers}
+            activeClass={activeClass}
+            onToggle={toggleSeat}
+          />
         </div>
 
         <div className="seat-selection-sidebar">
           <article className="admin-form">
             <div>
-              <p className="eyebrow">Passengers</p>
-              <h2>Traveler details</h2>
+              <p className="eyebrow">{t.passengers}</p>
+              <h2>{t.travelerDetails}</h2>
             </div>
             <div className="seat-passenger-list">
               {draft.passengers.map((passenger, index) => (
-                <div className="seat-passenger-item" key={`${passenger.passportNumber}-${index}`}>
+                <button
+                  type="button"
+                  className={`seat-passenger-item ${activePassengerIndex === index ? 'active' : ''}`}
+                  key={`${passenger.passportNumber}-${index}`}
+                  onClick={() => setActivePassengerIndex(index)}
+                >
                   <strong>{passenger.fullName}</strong>
-                  <span>{passenger.classType}</span>
-                  <p>{selectedSeats[index] ? `Seat ${selectedSeats[index]}` : 'Seat not selected yet'}</p>
-                </div>
+                  <span>{t.classTypes[passenger.classType] || passenger.classType}</span>
+                  <p>{selectedSeats[index] ? `${t.seat} ${selectedSeats[index]}` : t.seatNotSelected}</p>
+                </button>
               ))}
-            </div>
-          </article>
-
-          <article className="admin-form">
-            <div>
-              <p className="eyebrow">Discount</p>
-              <h2>Apply code</h2>
-            </div>
-            <div className="apply-code-row">
-              <input placeholder="Discount code" value={discountCode} onChange={(event) => setDiscountCode(event.target.value)} />
-              <button type="button" className="secondary" onClick={applyDiscount}>
-                Apply
-              </button>
-            </div>
-            <div className="price-strip">
-              <span>Subtotal: {formatMoney(subtotal)}</span>
-              <span>Discount: {formatMoney(discount?.amount || 0)}</span>
-              <strong>Total: {formatMoney(total)}</strong>
-            </div>
-            <div className="row-actions">
-              <button type="button" onClick={confirmBooking}>
-                {draft.bookingId ? 'Save booking' : 'Confirm booking'}
-              </button>
-              <button
-                type="button"
-                className="ghost"
-                onClick={() => {
-                  navigate(-1);
-                }}
-              >
-                Back
-              </button>
             </div>
           </article>
         </div>

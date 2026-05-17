@@ -21,7 +21,7 @@ export default function AdminUsers() {
   }, []);
 
   async function deleteUser(id) {
-    if (!window.confirm('Delete this user?')) return;
+    if (!window.confirm(t.deleteUserConfirm)) return;
     try {
       await api.deleteUser(id);
       load();
@@ -34,14 +34,14 @@ export default function AdminUsers() {
     <section className="content-section page-top admin-page">
       <div className="page-banner">
         <div>
-          <p className="eyebrow">Passenger accounts</p>
+          <p className="eyebrow">{t.passengerAccounts}</p>
           <h1>{t.users}</h1>
-          <p className="section-copy">View registered users and remove non-admin customer accounts from one dedicated page.</p>
+          <p className="section-copy">{t.usersCopy}</p>
         </div>
         <div className="page-banner-card">
-          <span>Total users</span>
+          <span>{t.totalUsers}</span>
           <strong>{users.length}</strong>
-          <p>Registered accounts</p>
+          <p>{t.registeredAccounts}</p>
         </div>
       </div>
 
@@ -56,13 +56,13 @@ export default function AdminUsers() {
             <span>{user.email}</span>
             <span>{user.phone || '-'}</span>
             <span>{user.nationality || '-'}</span>
-            <span className="status">{user.role}</span>
+            <span className="status">{t.statusLabels[user.role] || user.role}</span>
             <button className="ghost" disabled={user.role === 'admin'} onClick={() => deleteUser(user.user_id)}>
               {t.delete}
             </button>
           </article>
         ))}
-        {!users.length && <p className="empty">No users found.</p>}
+        {!users.length && <p className="empty">{t.noUsersFound}</p>}
       </section>
     </section>
   );

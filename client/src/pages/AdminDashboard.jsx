@@ -18,14 +18,14 @@ export default function AdminDashboard() {
     <section className="content-section page-top admin-page">
       <div className="page-banner">
         <div>
-          <p className="eyebrow">SkyLink control center</p>
+          <p className="eyebrow">{t.adminControl}</p>
           <h1>{t.adminDashboard}</h1>
-          <p className="section-copy">Monitor bookings, revenue, cabin demand, and operational activity from one focused analytics page.</p>
+          <p className="section-copy">{t.adminCopy}</p>
         </div>
         <div className="page-banner-card">
-          <span>Operations status</span>
-          <strong>Live</strong>
-          <p>Analytics synced</p>
+          <span>{t.operationsStatus}</span>
+          <strong>{t.live}</strong>
+          <p>{t.analyticsSynced}</p>
         </div>
       </div>
 
@@ -66,7 +66,7 @@ export default function AdminDashboard() {
               return (
                 <article className="bar-row" key={category.class_type}>
                   <div className="bar-meta">
-                    <strong>{category.class_type}</strong>
+                    <strong>{t.classTypes[category.class_type] || category.class_type}</strong>
                     <span>
                       {category.passengerCount} {t.passengersLabel} | {category.bookingCount} {t.bookingsLabel}
                     </span>
